@@ -1,99 +1,63 @@
 import 'package:flutter/material.dart';
 
-class MyAppBar extends StatelessWidget {
-  const MyAppBar({required this.title, super.key});
-
-  final Widget title;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      height: 56,
-      padding: const EdgeInsets.symmetric(horizontal: 20),
-      decoration: const BoxDecoration(
-        color: Colors.indigo, // Professional University Blue
-      ),
-      child: Row(
-        // Removed Icon and IconButton widgets here
-        children: [
-          Expanded(child: title),
-        ],
-      ),
-    );
-  }
-}
-
-class MyScaffold extends StatelessWidget {
-  const MyScaffold({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Material(
-      color: Colors.grey,
-      child: Column(
-        children: [
-          MyAppBar(
-            title: const Text(
-              'PERSONAL PROFESSIONAL PORTFOLIO APP',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                letterSpacing: 1.2,
-              ),
-            ),
-          ),
-          Expanded(
-            child: ListView(
-              padding: const EdgeInsets.all(24),
-              children: [
-                const Text(
-                  "Professional Summary",
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                ),
-                const Divider(thickness: 1),
-                const SizedBox(height: 10),
-                const Text(
-                  "I am Josephine Mends-Wilson, a level 300 Computer Science student. This portfolio showcases my academic progress and technical projects developed during my undergraduate studies.",
-                  style: TextStyle(fontSize: 16, height: 1.5),
-                ),
-                const SizedBox(height: 30),
-                const Text(
-                  "Academic Projects",
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                ),
-                const Divider(thickness: 1),
-                _projectItem("Web app Development", "Mini Website project."),
-                _projectItem("Database Systems", "Church database system."),
-    
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _projectItem(String title, String description) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 12.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-          const SizedBox(height: 4),
-          Text(description, style: const TextStyle(color: Colors.black87)),
-        ],
-      ),
-    );
-  }
-}
-
 void main() {
-  runApp(
-    const MaterialApp(
-      debugShowCheckedModeBanner: false,
-      home: SafeArea(child: MyScaffold()),
-    ),
-  );
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  const MyApp({super .key});
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'INFT 425 - Ahorsode Benjamin Delali',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+      ),
+      home: const HelloWorldScreen(),
+    );
+  }
+}
+
+class HelloWorldScreen extends StatelessWidget {
+  const HelloWorldScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('INFT 425 - Ahorsode Benjamin Delali'),
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            const Text(
+              'Hello, World!',
+              style: TextStyle(
+                fontSize: 40,
+                fontWeight: FontWeight.bold,
+                color: Colors.blue,
+              ),
+              ),
+            const SizedBox(height: 20),
+            Icon(
+              Icons.code,
+              size: 50,
+              color: Colors.green,
+              ),
+            const SizedBox(height: 20),
+            Text(
+              'Department of Computer Sciences and Engineering',
+              style: TextStyle(
+                fontSize: 16,
+                fontStyle: FontStyle.italic,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }
