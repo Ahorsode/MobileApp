@@ -5,9 +5,9 @@ import 'task_list_screen.dart';
 /// Screen that displays the student's profile details.
 class ProfileScreen extends StatelessWidget {
   final Student student = Student(
-    name: 'John Doe',
-    studentId: '12345678',
-    programme: 'BSc. Computer Science',
+    name: 'Ahorsode Benjamin Delali',
+    studentId: '226IT02000268',
+    programme: 'BSc. Information Technology',
     level: 300,
   );
 
