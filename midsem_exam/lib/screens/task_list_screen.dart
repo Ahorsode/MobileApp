@@ -1,9 +1,9 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../models/task.dart';
 
-/// TaskListScreen - displays a list of student tasks and allows adding new ones.
-/// This is a [StatefulWidget] so that state changes (new tasks, completions)
-/// trigger a UI rebuild via [setState].
+/// TaskListScreen - displays a list of student tasks and handles persistence.
 class TaskListScreen extends StatefulWidget {
   const TaskListScreen({super.key});
 
@@ -12,34 +12,66 @@ class TaskListScreen extends StatefulWidget {
 }
 
 class _TaskListScreenState extends State<TaskListScreen> {
-  // Initial hardcoded list of at least 3 tasks (as required by Part B)
-  final List<Task> _tasks = [
-    Task(
-      title: 'Submit Flutter Midsem',
-      courseCode: 'CS301',
-      dueDate: DateTime.now().add(const Duration(days: 1)),
-    ),
-    Task(
-      title: 'Database Project',
-      courseCode: 'CS302',
-      dueDate: DateTime.now().add(const Duration(days: 3)),
-      isComplete: true,
-    ),
-    Task(
-      title: 'Networking Assignment',
-      courseCode: 'CS303',
-      dueDate: DateTime.now().add(const Duration(days: 5)),
-    ),
-  ];
+  // List of tasks
+  List<Task> _tasks = [];
+  bool _isLoading = true;
 
-  // Controllers to capture user input from the dialog TextFields
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _courseController = TextEditingController();
-
-  // Holds the date the user selects via the date picker
   DateTime? _selectedDate;
 
-  /// Formats a [DateTime] as 'dd/mm/yyyy' with leading zeros using string interpolation.
+  @override
+  void initState() {
+    super.initState();
+    _loadTasks(); // Load tasks on startup (Part C requirement)
+  }
+
+  /// Load tasks from SharedPreferences. Falls back to hardcoded list if empty.
+  Future<void> _loadTasks() async {
+    final prefs = await SharedPreferences.getInstance();
+    final String? tasksJson = prefs.getString('tasks');
+
+    if (tasksJson != null) {
+      final List<dynamic> decoded = jsonDecode(tasksJson);
+      setState(() {
+        _tasks = decoded.map((item) => Task.fromJson(item)).toList();
+        _isLoading = false;
+      });
+    } else {
+      // Fallback to hardcoded list as per requirements
+      setState(() {
+        _tasks = [
+          Task(
+            title: 'Submit Flutter Midsem',
+            courseCode: 'CS301',
+            dueDate: DateTime.now().add(const Duration(days: 1)),
+          ),
+          Task(
+            title: 'Database Project',
+            courseCode: 'CS302',
+            dueDate: DateTime.now().add(const Duration(days: 3)),
+            isComplete: true,
+          ),
+          Task(
+            title: 'Networking Assignment',
+            courseCode: 'CS303',
+            dueDate: DateTime.now().add(const Duration(days: 5)),
+          ),
+        ];
+        _isLoading = false;
+      });
+      _saveTasks();
+    }
+  }
+
+  /// Save tasks to SharedPreferences (Part C requirement)
+  Future<void> _saveTasks() async {
+    final prefs = await SharedPreferences.getInstance();
+    final String encoded = jsonEncode(_tasks.map((t) => t.toJson()).toList());
+    await prefs.setString('tasks', encoded);
+  }
+
+  /// Formats a [DateTime] as 'dd/mm/yyyy' with leading zeros.
   String _formatDate(DateTime date) {
     final day = date.day.toString().padLeft(2, '0');
     final month = date.month.toString().padLeft(2, '0');
@@ -47,11 +79,8 @@ class _TaskListScreenState extends State<TaskListScreen> {
     return '$day/$month/$year';
   }
 
-  /// Opens a dialog that lets the user enter a task title, course code,
-  /// and select a due date. When 'Save' is tapped, a new [Task] is created
-  /// and added to [_tasks] using [setState] to update the UI.
+  /// Opens a dialog to add a new task.
   void _showAddTaskDialog() {
-    // Clear controllers and date before showing dialog
     _titleController.clear();
     _courseController.clear();
     _selectedDate = null;
@@ -59,7 +88,6 @@ class _TaskListScreenState extends State<TaskListScreen> {
     showDialog(
       context: context,
       builder: (context) {
-        // StatefulBuilder is used so the date selection updates inside the dialog
         return StatefulBuilder(
           builder: (context, setDialogState) {
             return AlertDialog(
@@ -67,7 +95,6 @@ class _TaskListScreenState extends State<TaskListScreen> {
               content: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  // TextField for entering the task title
                   TextField(
                     controller: _titleController,
                     decoration: const InputDecoration(
@@ -76,7 +103,6 @@ class _TaskListScreenState extends State<TaskListScreen> {
                     ),
                   ),
                   const SizedBox(height: 10),
-                  // TextField for entering the course code
                   TextField(
                     controller: _courseController,
                     decoration: const InputDecoration(
@@ -85,7 +111,6 @@ class _TaskListScreenState extends State<TaskListScreen> {
                     ),
                   ),
                   const SizedBox(height: 12),
-                  // Row showing selected date and a button to open the date picker
                   Row(
                     children: [
                       Text(
@@ -101,14 +126,12 @@ class _TaskListScreenState extends State<TaskListScreen> {
                         icon: const Icon(Icons.calendar_today, size: 16),
                         label: const Text('Pick Date'),
                         onPressed: () async {
-                          // Open the material date picker
                           final DateTime? picked = await showDatePicker(
                             context: context,
                             initialDate: DateTime.now(),
                             firstDate: DateTime(2000),
                             lastDate: DateTime(2101),
                           );
-                          // Update the dialog's local state to show new date
                           if (picked != null) {
                             setDialogState(() {
                               _selectedDate = picked;
@@ -121,18 +144,15 @@ class _TaskListScreenState extends State<TaskListScreen> {
                 ],
               ),
               actions: [
-                // Cancel closes the dialog without saving
                 TextButton(
                   onPressed: () => Navigator.pop(context),
                   child: const Text('Cancel'),
                 ),
-                // Save creates a new Task and adds it to the list with setState
                 ElevatedButton(
                   onPressed: () {
                     if (_titleController.text.isNotEmpty &&
                         _courseController.text.isNotEmpty &&
                         _selectedDate != null) {
-                      // setState notifies Flutter to rebuild the list with the new task
                       setState(() {
                         _tasks.add(Task(
                           title: _titleController.text,
@@ -140,6 +160,7 @@ class _TaskListScreenState extends State<TaskListScreen> {
                           dueDate: _selectedDate!,
                         ));
                       });
+                      _saveTasks(); // Save after adding (Part C)
                       Navigator.pop(context);
                     }
                   },
@@ -161,41 +182,39 @@ class _TaskListScreenState extends State<TaskListScreen> {
         backgroundColor: Colors.blueAccent,
         foregroundColor: Colors.white,
       ),
-      body: ListView.builder(
-        itemCount: _tasks.length,
-        itemBuilder: (context, index) {
-          final task = _tasks[index];
-          return Card(
-            margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            child: ListTile(
-              // Strike-through completed task titles
-              title: Text(
-                task.title,
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  decoration: task.isComplete ? TextDecoration.lineThrough : null,
-                  color: task.isComplete ? Colors.grey : Colors.black,
-                ),
-              ),
-              // Format date as dd/mm/yyyy using string interpolation with leading zeros
-              subtitle: Text(
-                '${task.courseCode} - Due: ${_formatDate(task.dueDate)}',
-              ),
-              // Checkbox toggles the isComplete field using setState to update the UI
-              trailing: Checkbox(
-                value: task.isComplete,
-                onChanged: (value) {
-                  // setState ensures the UI reflects the toggled isComplete status
-                  setState(() {
-                    task.isComplete = value ?? false;
-                  });
-                },
-              ),
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : ListView.builder(
+              itemCount: _tasks.length,
+              itemBuilder: (context, index) {
+                final task = _tasks[index];
+                return Card(
+                  margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  child: ListTile(
+                    title: Text(
+                      task.title,
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        decoration: task.isComplete ? TextDecoration.lineThrough : null,
+                        color: task.isComplete ? Colors.grey : Colors.black,
+                      ),
+                    ),
+                    subtitle: Text(
+                      '${task.courseCode} - Due: ${_formatDate(task.dueDate)}',
+                    ),
+                    trailing: Checkbox(
+                      value: task.isComplete,
+                      onChanged: (value) {
+                        setState(() {
+                          task.isComplete = value ?? false;
+                        });
+                        _saveTasks(); // Save after toggle (Part C)
+                      },
+                    ),
+                  ),
+                );
+              },
             ),
-          );
-        },
-      ),
-      // FAB button opens the Add Task dialog
       floatingActionButton: FloatingActionButton(
         onPressed: _showAddTaskDialog,
         backgroundColor: Colors.blueAccent,
