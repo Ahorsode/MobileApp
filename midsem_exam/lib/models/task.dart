@@ -14,3 +14,4 @@ class Task {
     this.isComplete = false,
   });
 }
+
