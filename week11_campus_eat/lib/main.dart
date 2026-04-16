@@ -87,10 +87,12 @@ class CampusEatsApp extends StatelessWidget {
           ),
           contentPadding: const EdgeInsets.symmetric(vertical: 18, horizontal: 20),
         ),
-        cardTheme: CardTheme(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        cardTheme: const CardTheme(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.all(Radius.circular(16)),
+          ),
           elevation: 4,
-          shadowColor: Colors.black.withOpacity(0.1),
+          shadowColor: Color(0x1A000000), // Equivalent to Colors.black.withOpacity(0.1)
         ),
         useMaterial3: true,
       ),
