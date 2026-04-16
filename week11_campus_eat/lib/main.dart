@@ -1,25 +1,31 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:provider/provider.dart';
+import 'firebase_options.dart';
+
 import 'viewmodels/auth_viewmodel.dart';
+import 'viewmodels/menu_viewmodel.dart';
+import 'viewmodels/cart_viewmodel.dart';
+import 'viewmodels/checkout_viewmodel.dart';
 import 'screens/auth/auth_wrapper.dart';
-import 'screens/profile/profile_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
   
-  // NOTE: Ensure your firebase_options.dart is generated via FlutterFire CLI
-  // For now, initializing with default options or assuming it's configured natively.
-  try {
-    await Firebase.initializeApp();
-  } catch (e) {
-    debugPrint("Firebase Initialization Error: $e");
-  }
+  // Initialize ViewModels that require async setup
+  final cartViewModel = CartViewModel();
+  await cartViewModel.init();
 
   runApp(
     MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => AuthViewModel()),
+        ChangeNotifierProvider(create: (_) => MenuViewModel()),
+        ChangeNotifierProvider.value(value: cartViewModel),
+        ChangeNotifierProvider(create: (_) => CheckoutViewModel()),
       ],
       child: const CampusEatsApp(),
     ),
@@ -34,15 +40,10 @@ class CampusEatsApp extends StatelessWidget {
     return MaterialApp(
       title: 'Campus Eats',
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.orange),
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepOrange),
         useMaterial3: true,
       ),
-      // AuthWrapper handles the initial routing logic
       home: const AuthWrapper(),
-      routes: {
-        '/profile': (context) => const ProfileScreen(),
-      },
-      debugShowCheckedModeBanner: false,
     );
   }
 }
