@@ -3,12 +3,14 @@ class UserModel {
   final String email;
   final bool isAdmin;
   final int totalOrders;
+  final bool isGuest;
 
   UserModel({
     required this.uid,
     required this.email,
     this.isAdmin = false,
     this.totalOrders = 0,
+    this.isGuest = false,
   });
 
   // Factory to create a UserModel from a Firestore document
@@ -18,6 +20,7 @@ class UserModel {
       email: map['email'] ?? '',
       isAdmin: map['isAdmin'] ?? false,
       totalOrders: map['totalOrders'] ?? 0,
+      isGuest: map['isGuest'] ?? false,
     );
   }
 
@@ -28,6 +31,7 @@ class UserModel {
       'email': email,
       'isAdmin': isAdmin,
       'totalOrders': totalOrders,
+      'isGuest': isGuest,
     };
   }
 }
