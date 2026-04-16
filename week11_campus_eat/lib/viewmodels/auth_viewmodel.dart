@@ -52,7 +52,7 @@ class AuthViewModel extends ChangeNotifier {
       _setLoading(false);
       return true;
     } catch (e) {
-      _errorMessage = e.toString();
+      _errorMessage = e.toString().replaceFirst('Exception: ', '');
       _setLoading(false);
       return false;
     }
@@ -68,7 +68,22 @@ class AuthViewModel extends ChangeNotifier {
       _setLoading(false);
       return true;
     } catch (e) {
-      _errorMessage = e.toString();
+      _errorMessage = e.toString().replaceFirst('Exception: ', '');
+      _setLoading(false);
+      return false;
+    }
+  }
+
+  // Sign In as Guest
+  Future<bool> signInAsGuest() async {
+    _setLoading(true);
+    _errorMessage = null;
+    try {
+      await _authService.signInAnonymously();
+      _setLoading(false);
+      return true;
+    } catch (e) {
+      _errorMessage = e.toString().replaceFirst('Exception: ', '');
       _setLoading(false);
       return false;
     }
