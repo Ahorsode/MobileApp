@@ -6,6 +6,8 @@ class MenuItem {
   final String imageUrl;
   final int stock;
   final String category; // Breakfast, Lunch, Snacks
+  final double averageRating;
+  final int ratingCount;
 
   MenuItem({
     required this.id,
@@ -15,6 +17,8 @@ class MenuItem {
     required this.imageUrl,
     required this.stock,
     required this.category,
+    this.averageRating = 0.0,
+    this.ratingCount = 0,
   });
 
   factory MenuItem.fromMap(Map<String, dynamic> map, String docId) {
@@ -26,6 +30,8 @@ class MenuItem {
       imageUrl: map['imageUrl'] ?? 'https://via.placeholder.com/150',
       stock: map['stock'] ?? 0,
       category: map['category'] ?? 'Lunch',
+      averageRating: (map['averageRating'] ?? 0.0).toDouble(),
+      ratingCount: map['ratingCount'] ?? 0,
     );
   }
 
@@ -37,6 +43,8 @@ class MenuItem {
       'imageUrl': imageUrl,
       'stock': stock,
       'category': category,
+      'averageRating': averageRating,
+      'ratingCount': ratingCount,
     };
   }
 }
