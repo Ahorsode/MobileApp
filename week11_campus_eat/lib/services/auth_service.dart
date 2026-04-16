@@ -25,14 +25,17 @@ class FirebaseAuthService {
           email: email,
           isAdmin: false, // Default to false
           totalOrders: 0, // Default to 0
+          isGuest: false,
         );
 
         await _db.collection('users').doc(user.uid).set(newUser.toMap());
         return newUser;
       }
       return null;
+    } on FirebaseAuthException catch (e) {
+      throw Exception(_mapFirebaseError(e.code));
     } catch (e) {
-      rethrow; // Propagate error to ViewModel
+      throw Exception('An unexpected error occurred.');
     }
   }
 
@@ -40,8 +43,54 @@ class FirebaseAuthService {
   Future<void> signIn(String email, String password) async {
     try {
       await _auth.signInWithEmailAndPassword(email: email, password: password);
+    } on FirebaseAuthException catch (e) {
+      throw Exception(_mapFirebaseError(e.code));
     } catch (e) {
-      rethrow;
+      throw Exception('An unexpected error occurred.');
+    }
+  }
+
+  // Continue as Guest (Anonymous Login)
+  Future<void> signInAnonymously() async {
+    try {
+      UserCredential result = await _auth.signInAnonymously();
+      User? user = result.user;
+
+      if (user != null) {
+        UserModel guestUser = UserModel(
+          uid: user.uid,
+          email: 'Guest',
+          isAdmin: false,
+          totalOrders: 0,
+          isGuest: true,
+        );
+        await _db.collection('users').doc(user.uid).set(guestUser.toMap());
+      }
+    } on FirebaseAuthException catch (e) {
+      throw Exception(_mapFirebaseError(e.code));
+    } catch (e) {
+      throw Exception('An unexpected error occurred.');
+    }
+  }
+
+  String _mapFirebaseError(String code) {
+    switch (code) {
+      case 'user-not-found':
+        return 'No user found with this email.';
+      case 'wrong-password':
+        return 'Incorrect password provided.';
+      case 'network-request-failed':
+        return 'Network error. Please check your internet connection.';
+      case 'email-already-in-use':
+        return 'An account already exists with this email.';
+      case 'invalid-email':
+        return 'The email address is not valid.';
+      case 'invalid-credential':
+        return 'Invalid credentials. Please verify your email and password.';
+      case 'weak-password':
+        return 'The password provided is too weak (min. 6 characters).';
+      default:
+        return 'Authentication failed: $code';
     }
   }
 
