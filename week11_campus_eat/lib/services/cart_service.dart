@@ -2,17 +2,19 @@ import 'package:hive_flutter/hive_flutter.dart';
 import '../models/cart_item.dart';
 
 class CartService {
-  static const String boxName = 'cartBox';
+  String? _userId;
+  String get _boxName => _userId != null ? 'cart_$_userId' : 'cart_guest';
 
-  Future<void> init() async {
+  Future<void> init([String? userId]) async {
+    _userId = userId;
     await Hive.initFlutter();
     if (!Hive.isAdapterRegistered(1)) {
       Hive.registerAdapter(CartItemAdapter());
     }
-    await Hive.openBox<CartItem>(boxName);
+    await Hive.openBox<CartItem>(_boxName);
   }
 
-  Box<CartItem> get _box => Hive.box<CartItem>(boxName);
+  Box<CartItem> get _box => Hive.box<CartItem>(_boxName);
 
   List<CartItem> getItems() {
     return _box.values.toList();

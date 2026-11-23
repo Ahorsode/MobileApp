@@ -12,10 +12,18 @@ class CartViewModel extends ChangeNotifier {
   double get totalAmount => _isLoaded ? _cartService.getTotal() : 0.0;
   int get itemCount => items.fold(0, (sum, item) => sum + item.quantity);
 
-  Future<void> init() async {
-    await _cartService.init();
+  Future<void> init([String? userId]) async {
+    await _cartService.init(userId);
     _isLoaded = true;
     notifyListeners();
+  }
+
+  Future<void> updateUser(String? userId) async {
+    // Only re-init if the userId has changed
+    if (_cartService.getItems().isNotEmpty || _isLoaded) {
+       await _cartService.init(userId);
+       notifyListeners();
+    }
   }
 
   Future<void> addItem(MenuItem menuItem) async {
@@ -25,6 +33,7 @@ class CartViewModel extends ChangeNotifier {
       name: menuItem.name,
       price: menuItem.price,
       quantity: 1,
+      imageUrl: menuItem.imageUrl,
     );
     await _cartService.addToCart(cartItem);
     notifyListeners();

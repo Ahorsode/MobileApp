@@ -43,6 +43,12 @@ dependencies:
   hive_flutter: ^1.1.0
   http: ^1.6.0
   image_picker: ^1.2.1
+  google_fonts: ^7.0.1
+  flutter_animate: ^4.5.0
+  intl: ^0.20.1
+  connectivity_plus: ^6.1.1
+  firebase_messaging: ^16.2.0
+  flutter_local_notifications: ^18.0.1
 
 dev_dependencies:
   flutter_test:

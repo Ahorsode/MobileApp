@@ -10,6 +10,8 @@ class OrderModel {
   final DateTime timestamp;
   final int? rating;
   final String? review;
+  final String cafeteria;
+  final bool isSynced;
 
   OrderModel({
     required this.id,
@@ -20,6 +22,8 @@ class OrderModel {
     required this.timestamp,
     this.rating,
     this.review,
+    this.cafeteria = 'Oyibi',
+    this.isSynced = true,
   });
 
   factory OrderModel.fromMap(Map<String, dynamic> map, String docId) {
@@ -33,13 +37,18 @@ class OrderModel {
                 name: item['name'] ?? '',
                 price: (item['price'] ?? 0.0).toDouble(),
                 quantity: item['quantity'] ?? 1,
+                imageUrl: item['imageUrl'] ?? '',
               ))
-          .toList(),
+          .toList().cast<CartItem>(),
       totalAmount: (map['totalAmount'] ?? 0.0).toDouble(),
       status: map['status'] ?? 'pending',
-      timestamp: (map['timestamp'] as Timestamp).toDate(),
+      timestamp: map['timestamp'] != null 
+          ? (map['timestamp'] as Timestamp).toDate() 
+          : DateTime.now(),
       rating: map['rating'],
       review: map['review'],
+      cafeteria: map['cafeteria'] ?? 'Oyibi',
+      isSynced: map['isSynced'] ?? true,
     );
   }
 
@@ -52,6 +61,8 @@ class OrderModel {
       'timestamp': FieldValue.serverTimestamp(),
       'rating': rating,
       'review': review,
+      'cafeteria': cafeteria,
+      'isSynced': isSynced,
     };
   }
 }

@@ -60,9 +60,15 @@ class OrderService {
     return _firestore
         .collection('orders')
         .where('userId', isEqualTo: userId)
-        .orderBy('timestamp', descending: true)
         .snapshots()
-        .map((snapshot) => snapshot.docs.map((doc) => OrderModel.fromMap(doc.data(), doc.id)).toList());
+        .map((snapshot) {
+          final orders = snapshot.docs
+              .map((doc) => OrderModel.fromMap(doc.data(), doc.id))
+              .toList();
+          // Local sort to avoid requiring a Composite Index in Firestore
+          orders.sort((a, b) => b.timestamp.compareTo(a.timestamp));
+          return orders;
+        });
   }
 
   // Admin: Update Status
@@ -79,10 +85,9 @@ class OrderService {
       if (!orderSnap.exists) throw Exception("Order not found.");
       if (orderSnap.get('status') != 'completed') throw Exception("Order must be completed before rating.");
       
-      try {
-        if (orderSnap.get('rating') != null) throw Exception("Order already rated.");
-      } catch (e) {
-        // Field might not exist, which is fine
+      final data = orderSnap.data() as Map<String, dynamic>;
+      if (data.containsKey('rating') && data['rating'] != null) {
+        throw Exception("This order has already been rated.");
       }
 
       // 1. Read all associated menu items

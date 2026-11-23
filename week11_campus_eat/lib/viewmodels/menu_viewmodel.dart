@@ -8,9 +8,13 @@ class MenuViewModel extends ChangeNotifier {
   // Advanced Feature C: Search & Filter State
   String _searchQuery = '';
   String _selectedCategory = 'All';
+  RangeValues _priceRange = const RangeValues(0, 100);
+  String _selectedCafeteria = 'Oyibi';
 
   String get searchQuery => _searchQuery;
   String get selectedCategory => _selectedCategory;
+  RangeValues get priceRange => _priceRange;
+  String get selectedCafeteria => _selectedCafeteria;
 
   void setSearchQuery(String query) {
     _searchQuery = query.toLowerCase();
@@ -22,22 +26,35 @@ class MenuViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  void setPriceRange(RangeValues range) {
+    _priceRange = range;
+    notifyListeners();
+  }
+
+  void setCafeteria(String cafeteria) {
+    _selectedCafeteria = cafeteria;
+    notifyListeners();
+  }
+
   // Base Stream
   Stream<List<MenuItem>> get menuStream => _menuService.getMenuItemsStream();
 
-  // Helper method to filter items dynamically based on current search and category state
+  // Helper method to filter items dynamically
   List<MenuItem> filterItems(List<MenuItem> items) {
     return items.where((item) {
-      // 1. Stock validation (Optional: can hide totally out-of-stock items, or keep them and disable button)
-      // We will show them but label them Out of Stock in UI later.
-      
+      // 1. Cafeteria Filter
+      final matchesCafeteria = item.cafeteria == _selectedCafeteria;
+
       // 2. Category Filter
       final matchesCategory = _selectedCategory == 'All' || item.category == _selectedCategory;
       
       // 3. Search Filter
       final matchesSearch = item.name.toLowerCase().contains(_searchQuery);
 
-      return matchesCategory && matchesSearch;
+      // 4. Price Filter
+      final matchesPrice = item.price >= _priceRange.start && item.price <= _priceRange.end;
+
+      return matchesCafeteria && matchesCategory && matchesSearch && matchesPrice;
     }).toList();
   }
 
